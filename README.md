@@ -1,6 +1,10 @@
 # FastestBibiliDownloader
 
-#### 项目地址：**[ FastestBilibiliDownloader](https://github.com/sodaling/FastestBilibiliDownloader)**
+#### 项目地址：**[ FastestBilibiliDownloader](https://github.com/Luoxin/FastestBilibiliDownloader)**
+Fork自[ sodaling/FastestBilibiliDownl](https://github.com/sodaling/FastestBilibiliDownl) 因为经常发现bug，原仓库合pr并没有那么的及时，就单独开了一个main分支用作我修复bug后的自用（主要是修复不同bug开了比较多的分支）
+
+以下是原内容
+***
 
 **东半球第二快的Bilibili.com（B站）视频下载器！**
 
@@ -72,7 +76,7 @@ go build cmd/start-concurrent-engine.go
    $ make run #运行镜像
    ```
 
-   
+
 
 ### 后续有空会打包bin文件到release的。
 
