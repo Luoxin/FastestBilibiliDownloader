@@ -1,7 +1,7 @@
 # FastestBibiliDownloader
 
 #### 项目地址：**[ FastestBilibiliDownloader](https://github.com/Luoxin/FastestBilibiliDownloader)**
-Fork自[ sodaling/FastestBilibiliDownl](https://github.com/sodaling/FastestBilibiliDownl) 因为经常发现bug，原仓库合pr并没有那么的及时，就单独开了一个main分支用作我修复bug后的自用（主要是修复不同bug开了比较多的分支）
+Fork自[ sodaling/FastestBilibiliDownl](https://github.com/sodaling/FastestBilibiliDownl) 因为经常发现bug以及有新的想法（不一定是原作者想要但是是我比较在意的需求），原仓库合pr并没有那么的及时，就单独开了一个main分支用作我修复bug后的自用（主要是修复不同bug和新需求开了比较多的分支）
 
 以下是原内容
 ***
@@ -55,7 +55,7 @@ go env -w  GOPROXY=https://goproxy.io #使用官方代理
 ```
 
 2. 一次性运行FastestBibiliDownloader
-程序入口在**cmd/start-concurrent-engine.go**，只需要
+   程序入口在**cmd/start-concurrent-engine.go**，只需要
 ```shell
 go run cmd/start-concurrent-engine.go
 ```
