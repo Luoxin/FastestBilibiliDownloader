@@ -24,14 +24,14 @@ func DefaultFetcher(url string) ([]byte, error) {
 	client := http.DefaultClient
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatalf("fetch err while request :%s,and the err is %s", url, err)
+		log.Errorf("fetch err while request :%s,and the err is %s", url, err)
 		return nil, err
 	}
 	request.Header.Add("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0")
 
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Fatalf("fetch err while request :%s,and the err is %s", url, err)
+		log.Errorf("fetch err while request :%s,and the err is %s", url, err)
 		return nil, err
 	}
 
@@ -43,7 +43,6 @@ func DefaultFetcher(url string) ([]byte, error) {
 
 	e := determineEncoding(bodyReader)
 	utf8Reader := transform.NewReader(bodyReader, e.NewDecoder())
-	defer resp.Body.Close()
 	return ioutil.ReadAll(utf8Reader)
 }
 
