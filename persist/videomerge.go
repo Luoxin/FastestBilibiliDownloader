@@ -2,14 +2,16 @@ package persist
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
+
 	"simple-golang-crawler/engine"
 	"simple-golang-crawler/model"
 	"simple-golang-crawler/tool"
-	"strings"
-	"sync"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/go-cmd/cmd"
 )

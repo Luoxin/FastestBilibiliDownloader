@@ -3,12 +3,14 @@ package fetcher
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+
 	"simple-golang-crawler/model"
 	"simple-golang-crawler/tool"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var _startUrlTem = "https://api.bilibili.com/x/web-interface/view?aid=%d"

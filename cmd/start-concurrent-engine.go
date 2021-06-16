@@ -2,9 +2,14 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"path"
+	"runtime"
 	"sync"
+	"time"
+
+	nested "github.com/antonfisher/nested-logrus-formatter"
+	log "github.com/sirupsen/logrus"
 
 	"simple-golang-crawler/engine"
 	"simple-golang-crawler/parser"
@@ -14,9 +19,30 @@ import (
 	"github.com/alexflint/go-arg"
 )
 
+func init() {
+	log.SetFormatter(&nested.Formatter{
+		FieldsOrder: []string{
+			log.FieldKeyTime, log.FieldKeyLevel, log.FieldKeyFile,
+			log.FieldKeyFunc, log.FieldKeyMsg,
+		},
+		CustomCallerFormatter: func(f *runtime.Frame) string {
+			return fmt.Sprintf("(%s %s:%d)", f.Function, path.Base(f.File), f.Line)
+		},
+		TimestampFormat:  time.RFC3339,
+		HideKeys:         true,
+		NoFieldsSpace:    true,
+		NoUppercaseLevel: true,
+		TrimMessages:     true,
+		CallerFirst:      true,
+	})
+	log.SetLevel(log.DebugLevel)
+	log.SetReportCaller(true)
+}
+
 var cmdArgs struct {
-	IdType string `arg:"-t,--type" help:"id type,support:\n\taid:\t\t下载单个视频\n\tupid\t\t下载指定up主的视频"`
-	Id     int64  `arg:"-i,--id" help:"视频或up主的id"`
+	IdType    string `arg:"-t,--type" help:"id type,support:\n\taid:\t\t下载单个视频\n\tupid\t\t下载指定up主的视频"`
+	Id        int64  `arg:"-i,--id" help:"视频或up主的id"`
+	WorkCount int    `arg:"-w,--worker" help:"并行数"`
 }
 
 func main() {
@@ -32,6 +58,10 @@ func main() {
 	} else {
 		idType = cmdArgs.IdType
 		id = cmdArgs.Id
+	}
+
+	if cmdArgs.WorkCount == 0 {
+		cmdArgs.WorkCount = 30
 	}
 
 	var req *engine.Request
@@ -53,7 +83,7 @@ func main() {
 	}
 
 	queueScheduler := scheduler.NewConcurrentScheduler()
-	conEngine := engine.NewConcurrentEngine(30, queueScheduler, itemChan)
+	conEngine := engine.NewConcurrentEngine(cmdArgs.WorkCount, queueScheduler, itemChan)
 	log.Println("Start working.")
 	conEngine.Run(req)
 	wg.Wait()

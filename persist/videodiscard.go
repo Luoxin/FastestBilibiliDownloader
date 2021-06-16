@@ -1,9 +1,11 @@
 package persist
 
 import (
-	"log"
-	"simple-golang-crawler/engine"
 	"sync"
+
+	"simple-golang-crawler/engine"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func VideoItemCleaner(wgOutside *sync.WaitGroup) (chan *engine.Item, error) {

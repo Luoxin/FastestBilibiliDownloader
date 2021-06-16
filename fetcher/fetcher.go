@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
