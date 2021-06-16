@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-resty/resty/v2"
 	log "github.com/sirupsen/logrus"
 
 	"golang.org/x/net/html/charset"
@@ -19,9 +20,17 @@ var _rateLimiter = time.NewTicker(100 * time.Microsecond)
 
 type FetchFun func(url string) ([]byte, error)
 
+var fetcherClient = resty.New().
+	SetTimeout(time.Second*5).
+	SetRetryMaxWaitTime(time.Second*5).
+	SetRetryWaitTime(time.Second).
+	SetTimeout(time.Minute).
+	SetHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.106 Safari/537.36").
+	SetLogger(log.New())
+
 func DefaultFetcher(url string) ([]byte, error) {
 	<-_rateLimiter.C
-	client := http.DefaultClient
+	client := fetcherClient.GetClient()
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Errorf("fetch err while request :%s,and the err is %s", url, err)
