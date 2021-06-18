@@ -23,21 +23,16 @@ func GenVideoFetcher(video *model.Video) FetchFun {
 
 	return func(url string) (bytes []byte, err error) {
 		<-_rateLimiter.C
-		client := http.Client{CheckRedirect: genCheckRedirectfun(referer)}
+		client := httpClientPool.GetClient()
+		client.CheckRedirect = genCheckRedirectfun(referer)
 
 		request, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			log.Fatalln(url, err)
 			return nil, err
 		}
-		request.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:56.0) Gecko/20100101 Firefox/56.0")
-		request.Header.Set("Accept", "*/*")
-		request.Header.Set("Accept-Language", "en-US,en;q=0.5")
-		request.Header.Set("Accept-Encoding", "gzip, deflate, br")
-		request.Header.Set("Range", "bytes=0-")
+
 		request.Header.Set("Referer", referer)
-		request.Header.Set("Origin", "https://www.bilibili.com")
-		request.Header.Set("Connection", "keep-alive")
 
 		resp, err := client.Do(request)
 		if err != nil {
@@ -45,8 +40,8 @@ func GenVideoFetcher(video *model.Video) FetchFun {
 			return nil, err
 		}
 
-		if resp.StatusCode != http.StatusPartialContent {
-			log.Errorf("Fail to download the video %d,status code is %d", video.ParCid.Cid, resp.StatusCode)
+		if resp.StatusCode != http.StatusPartialContent && resp.StatusCode != http.StatusOK {
+			log.Fatalln("Fail to download the video %d,status code is %d", video.ParCid.Cid, resp.StatusCode)
 			return nil, fmt.Errorf("wrong status code: %d", resp.StatusCode)
 		}
 		defer resp.Body.Close()
