@@ -58,7 +58,7 @@ func GenVideoFetcher(video *model.Video) FetchFun {
 		log.Println(video.ParCid.ParAid.Title + ":" + filename + " is downloading.")
 		_, err = io.Copy(file, resp.Body)
 		if err != nil {
-			log.Printf("Failed to download video %d", video.ParCid.Cid)
+			log.Printf("Failed to download video %d,err:%v", video.ParCid.Cid, err)
 			return nil, err
 		}
 		log.Println(video.ParCid.ParAid.Title + ":" + filename + " has finished.")
