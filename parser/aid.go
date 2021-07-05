@@ -7,11 +7,15 @@ import (
 	"simple-golang-crawler/fetcher"
 	"simple-golang-crawler/model"
 
+	"github.com/bluele/gcache"
+
 	"github.com/tidwall/gjson"
 )
 
 var _getAidUrlTemp = "https://api.bilibili.com/x/space/arc/search?mid=%d&ps=30&tid=0&pn=%d&keyword=&order=pubdate&jsonp=jsonp"
 var _getCidUrlTemp = "https://api.bilibili.com/x/player/pagelist?aid=%d"
+
+var Cache = gcache.New(10240).LRU().Build()
 
 func UpSpaceParseFun(contents []byte, url string) engine.ParseResult {
 	var retParseResult engine.ParseResult
@@ -31,6 +35,7 @@ func getAidDetailReqList(pageInfo gjson.Result) ([]*engine.Request, int64) {
 	for _, i := range pageInfo.Array() {
 		aid := i.Get("aid").Int()
 		upid = i.Get("mid").Int()
+		_ = Cache.Set(aid, i.Get("author").String())
 		title := i.Get("title").String()
 		reqUrl := fmt.Sprintf(_getCidUrlTemp, aid)
 		videoAid := model.NewVideoAidInfo(aid, title)

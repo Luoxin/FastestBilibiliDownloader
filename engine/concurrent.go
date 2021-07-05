@@ -47,7 +47,6 @@ func (c *ConcurrentEngine) Run(seed ...*Request) {
 
 	for {
 		result := <-resultChan
-
 		for _, item := range result.Items {
 			wg.Add(1)
 			go func(item *Item) {
@@ -82,7 +81,6 @@ func hasVisited(url string) bool {
 		_urlVisited[url] = struct{}{}
 	}
 	return false
-
 }
 
 func CreateWorker(out chan ParseResult, in chan *Request, notifier WorkerReadyNotifier) {

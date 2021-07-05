@@ -5,8 +5,11 @@ go 1.12
 require (
 	github.com/alexflint/go-arg v1.4.2
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
+	github.com/bluele/gcache v0.0.2
+	github.com/boltdb/bolt v1.3.1
 	github.com/go-cmd/cmd v1.2.0
 	github.com/go-resty/resty/v2 v2.6.0
+	github.com/prologic/bitcask v0.3.10
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/tidwall/gjson v1.5.0

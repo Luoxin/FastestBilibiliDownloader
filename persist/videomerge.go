@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
 	"simple-golang-crawler/engine"
 	"simple-golang-crawler/model"
+	"simple-golang-crawler/parser"
 	"simple-golang-crawler/tool"
 
+	"github.com/boltdb/bolt"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/go-cmd/cmd"
@@ -53,12 +56,50 @@ func VideoItemProcessor(wgOutside *sync.WaitGroup) (chan *engine.Item, error) {
 	return out, nil
 }
 
+var db *bolt.DB
+
+func init() {
+	var err error
+	db, err = bolt.Open("./bilibili.db", 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("bilibili"))
+		if err != nil {
+			log.Errorf("err:%v", err)
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+var value = []byte("true")
+
 func mergeVideo(video *model.Video, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var _videoOutputName = video.ParCid.ParAid.Title + _videoOutputNameExt
+	err := db.View(func(tx *bolt.Tx) error {
+		if string(tx.Bucket([]byte("bilibili")).Get([]byte(strconv.FormatInt(video.ParCid.ParAid.Aid, 10)))) == string(value) {
+			return fmt.Errorf("%v exist", video.ParCid.ParAid.Aid)
+		}
+		return nil
+	})
+	if err != nil {
+		log.Errorf("err:%v", err)
+		return
+	}
+
 	aidDirPath := tool.GetAidFileDownloadDir(video.ParCid.ParAid.Aid, video.ParCid.ParAid.Title)
 	contactTxtPath := filepath.Join(aidDirPath, _contactFileName)
-	videoOutputPath := filepath.Join(tool.GetMp4Dir(), _videoOutputName)
+	author, _ := parser.Cache.Get(video.ParCid.ParAid.Aid)
+	log.Infof("author is %v", author)
+	videoOutputPath := filepath.Join(tool.GetMp4Dir(fmt.Sprintf("%v", author)), _videoOutputName)
 
 	// merge cid
 	for i := int64(1); i <= video.ParCid.ParAid.GetPage(); i++ {
@@ -75,7 +116,7 @@ func mergeVideo(video *model.Video, wg *sync.WaitGroup) {
 		<-findCmd.Start()
 	}
 
-	err := createMergeAidInfoTxt(aidDirPath, video.ParCid.ParAid.GetPage())
+	err = createMergeAidInfoTxt(aidDirPath, video.ParCid.ParAid.GetPage())
 	if err != nil {
 		log.Printf("some thing wrong while merging video %d", video.ParCid.ParAid.Aid)
 		return
@@ -85,6 +126,19 @@ func mergeVideo(video *model.Video, wg *sync.WaitGroup) {
 	<-findCmd.Start()
 	log.Println("Video ", video.ParCid.ParAid.Title, " merge is complete.")
 	removeTempFile(aidDirPath, _videoOutputName)
+	err = db.Update(func(tx *bolt.Tx) error {
+		err = tx.Bucket([]byte("bilibili")).Put([]byte(strconv.FormatInt(video.ParCid.ParAid.Aid, 10)), value)
+		if err != nil {
+			log.Errorf("err:%v", err)
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Errorf("err:%v", err)
+		return
+	}
 }
 
 func createMergeAidInfoTxt(aidPath string, aidPage int64) error {
